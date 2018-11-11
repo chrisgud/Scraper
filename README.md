@@ -1,4 +1,4 @@
-# Star Tribute Politics Scraper
+# Star Tribune Politics Scraper
 
 * This app scrapes the current political article headlines, links, and summary information from http://www.startribune.com/politics/
 
