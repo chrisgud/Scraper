@@ -43,78 +43,30 @@ $(document).ready(() => {
         artBox.append('No saved Articles :(');
     }
 
-    /*const renderNotesList = data => {
-        let notesToRender = [];
-        if (!data.notes.length) {
-            notesToRender.push($(`<li class='list-group-item'>No Notes for this article yet.</li>`));
-        } else {
-            notesToRender = data.notes.map(note =>
-                $(`<li class='list-group-item note'>${note.noteText}<button class='btn btn-danger note-delete'>x</button></li>`));
-        }
-        $('.note-container').append(notesToRender);
-    }*/
     function renderNotesList(data) {
-        // This function handles rendering note list items to our notes modal
-        // Setting up an array of notes to render after finished
-        // Also setting up a currentNote variable to temporarily store each note
         var notesToRender = [];
         var currentNote;
         if (!data.notes.length) {
-            // If we have no notes, just display a message explaining this
             currentNote = $("<li class='list-group-item'>No notes for this article yet.</li>");
             notesToRender.push(currentNote);
         } else {
-            // If we do have notes, go through each one
             for (var i = 0; i < data.notes.length; i++) {
-                // Constructs an li element to contain our noteText and a delete button
                 currentNote = $("<li class='list-group-item note'>")
                     .text(data.notes[i].noteText)
                     .append($("<button class='btn btn-danger note-delete'>x</button>"));
-                // Store the note id on the delete button for easy access when trying to delete
                 currentNote.children("button").data("_id", data.notes[i]._id);
-                // Adding our currentNote to the notesToRender array
                 notesToRender.push(currentNote);
             }
         }
-        // Now append the notesToRender to the note-container inside the note modal
         $(".note-container").append(notesToRender);
     }
 
-
-    /*const addNote = function (event) {
-        const currentArticle = $(this).parents('.card').data();
-
-        $.get(`/notes/${currentArticle._id}`).then(data => {
-            const modalText = $(`<div class='container-fluid text-center>
-            <h4>Notes for Article: ${currentArticle._id}</hr>
-            <hr>
-            <ul class='light-group note-container'></ul>
-            <textarea placeholder='New Note' rows='4' cols='60'></textarea>
-            <button class='btn btn-success save'>Save Note</button>`);
-
-            bootbox.dialog({
-                message: modalText,
-                closeButton: true
-            });
-            const noteData = {
-                _id: currentArticle._id,
-                notes: data || []
-            };
-
-            $('.btn.save').data('article', noteData);
-            renderNotesList(noteData);
-        });
-    }*/
     function addNote(event) {
-        // This function handles opening the notes modal and displaying our notes
-        // We grab the id of the article to get notes for from the card element the delete button sits inside
         var currentArticle = $(this)
             .parents(".card")
             .data();
-        // Grab any notes with this headline/article id
         $.get("/notes/" + currentArticle._id).then(function (data) {
             console.log(data);
-            // Constructing our initial HTML to add to the notes modal
             var modalText = $("<div class='container-fluid text-center'>").append(
                 $("<h4>").text("Notes For Article: " + currentArticle._id),
                 $("<hr>"),
@@ -122,7 +74,6 @@ $(document).ready(() => {
                 $("<textarea placeholder='New Note' rows='4' cols='60'>"),
                 $("<button class='btn btn-success save'>Save Note</button>")
             );
-            // Adding the formatted HTML to the note modal
             bootbox.dialog({
                 message: modalText,
                 closeButton: true
@@ -131,14 +82,10 @@ $(document).ready(() => {
                 _id: currentArticle._id,
                 notes: data || []
             };
-            // Adding some information about the article and article notes to the save button for easy access
-            // When trying to add a new note
             $(".btn.save").data("article", noteData);
-            // renderNotesList will populate the actual note HTML inside of the modal we just created/opened
             renderNotesList(noteData);
         });
     }
-
 
     const saveNote = function () {
         let noteData;
@@ -167,7 +114,6 @@ $(document).ready(() => {
             init();
         });
     }
-
 
     $(document).on('click', '.btn.notes', addNote);
     $(document).on('click', '.btn.save', saveNote);
