@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const artBox = $(".article-container");
+    let artBox = $(".article-container");
 
 
     const init = () => {
@@ -84,16 +84,17 @@ $(document).ready(function () {
         });
     }
 
-    function handleArticleClear() {
-        $.get("api/clear").then(function () {
-            articleContainer.empty();
+    const clearArticles = () => {
+        $.get('/clear').then(() => {
+            artBox.empty();
             init();
         });
     }
 
+
     $(document).on("click", ".btn.save", handleArticleSave);
     $(document).on("click", ".scrape-new", handleArticleScrape);
-    $(".clear").on("click", handleArticleClear);
+    $(".clear").on("click", clearArticles);
 
     init();
 });

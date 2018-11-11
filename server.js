@@ -25,28 +25,44 @@ app.get('/saved', (req, res) => res.render('saved'));
 app.get('/scrape', (req, res) => {
     axios.get('https://www.startribune.com/politics/')
         .then((response) => {
+            let results = [];
             const $ = cheerio.load(response.data);
             $('.is-story').each(function (i, element) {
-                console.log($(this).children('a.tease-summary').text());
                 let result = {};
                 result.headline = $(this).children('a.tease-headline').data('linkname');
                 result.summary = $(this).parent().children('div.tease-summary').text();
                 result.url = $(this).children('a.tease-headline').attr('href');
-                console.log(result);
 
-                if (result.headline) {
-                    db.Article.create(result)
-                        .then(dbArt => console.log(dbArt))
-                        .catch(err => res.json(err));
-                }
+                results.push(result);
             })
+            db.Article.find()
+                .then(articles => {
+                    const savedArt = articles.filter(article => article.saved);
+                    const savedHeadlines = savedArt.map(art => art.headline);
+
+                    results.forEach((result) => {
+                        if (result.headline && !savedHeadlines.includes(result.headline)) {
+                            db.Article.findOneAndUpdate(
+                                {
+                                    headline: result.headline,
+                                },
+                                { saved: false, headline: result.headline, summary: result.summary, url: result.url },
+                                { upsert: true })
+                                .then(dbArt => res.json(dbArt))
+                                .catch(err => res.json(err));
+                        }
+                    });
+                })
+                .catch(err => res.json(err));
 
             res.send('Scrape Complete');
         })
         .catch(err => res.json(err));
 });
 app.get('/clear', (req, res) => {
-    db.Article.remove({}, err => console.log('Articles Removed'));
+    db.Article.remove({}, err => console.log('Articles Removed'))
+        .then(didIt => res.json(didIt))
+        .catch(err => res.json(err));
 });
 app.get('/articles', (req, res) => {
     console.log(req.query.saved);
@@ -82,7 +98,8 @@ app.put('/articles/:id', (req, res) => {
 app.delete('/articles/:id', (req, res) => {
     db.Article.findByIdAndDelete(req.params.id, () => {
         console.log(`${req.params.id} Article Deleted`)
-    });
+    }).then(didIt => res.json(didIt))
+        .catch(err => res.json(err));
 })
 app.post('/notes/', (req, res) => {
     db.Note.create(req.body)
@@ -94,6 +111,6 @@ app.delete('/notes/:id', (req, res) => {
     db.Note.findByIdAndDelete(req.params.id, () => {
         console.log(`${req.params.id} Note Deleted`);
     }).then(didIt => res.json(didIt))
-    .catch(err => res.json(err));
+        .catch(err => res.json(err));
 })
 app.listen(PORT, () => console.log(`App running on port ${PORT}!`));
