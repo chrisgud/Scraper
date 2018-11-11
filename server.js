@@ -17,7 +17,8 @@ app.use(express.static('public'));
 app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 
-mongoose.connect('mongodb://localhost/mongoHeadlines', { useNewUrlParser: true });
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost/mongoHeadlines';
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
 app.get('/', (req, res) => res.render('index'));
 app.get('/saved', (req, res) => res.render('saved'));
